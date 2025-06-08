@@ -1,0 +1,19 @@
+dn: dc=empresaZ,dc=com
+objectclass: top
+objectclass: domain
+dc: empresaZ
+
+dn: ou=people,dc=empresaZ,dc=com
+objectclass: top
+objectclass: organizationalUnit
+ou: people
+
+dn: uid=user1,ou=people,dc=empresaZ,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: User One
+sn: One
+uid: user1
+userPassword: password1

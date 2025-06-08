@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Configuration;
 // Importaciones de Spring Security
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -75,5 +76,24 @@ public class SecurityConfig {
         return http.build();
     }
     
-    
+    // @Autowired
+    // public void configure(AuthenticationManagerBuilder auth) throws Exception {
+    //     auth
+    //         .ldapAuthentication()
+    //         .userDnPatterns("uid={0},ou=people")
+    //         .contextSource()
+    //         .url("ldap://localhost:8389/dc=empresaZ,dc=com");
+    // }
+
+    // @Bean
+    // public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    //     return http
+    //         .authorizeHttpRequests(auth -> auth
+    //             .requestMatchers("/publico").permitAll()
+    //             .anyRequest().authenticated()
+    //         )
+    //         .httpBasic(Customizer.withDefaults())
+    //         .formLogin(Customizer.withDefaults())
+    //         .build();
+    // }
 }
