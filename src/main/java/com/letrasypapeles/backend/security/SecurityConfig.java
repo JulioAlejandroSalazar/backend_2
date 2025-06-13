@@ -36,10 +36,12 @@ public class SecurityConfig {
     }
 
     // Configuración del AuthenticationManager
+
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
+    
 
     // Configuración del DaoAuthenticationProvider
     @Bean
