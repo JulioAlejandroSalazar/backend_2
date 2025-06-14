@@ -1,11 +1,10 @@
-package com.letrasypapeles.backend;
+package com.letrasypapeles.backend.entity;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
-import com.letrasypapeles.backend.entity.Producto;
 
-public class ProductoTest {
+class ProductoTest {
     
     @Test
     void productoPrecioShouldBePositive() {

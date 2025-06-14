@@ -1,12 +1,10 @@
-package com.letrasypapeles.backend;
+package com.letrasypapeles.backend.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
-import com.letrasypapeles.backend.entity.Role;
-import com.letrasypapeles.backend.entity.User;
 
-public class UserTest {
+class UserTest {
 
     @Test
     void userShouldHaveRequiredFields() {

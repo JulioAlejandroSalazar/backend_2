@@ -1,13 +1,10 @@
-package com.letrasypapeles.backend;
+package com.letrasypapeles.backend.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 import org.junit.jupiter.api.Test;
-import com.letrasypapeles.backend.entity.Cliente;
-import com.letrasypapeles.backend.entity.Pedido;
-import com.letrasypapeles.backend.entity.Producto;
 
-public class PedidoTest {
+class PedidoTest {
 
     @Test
     void pedidoShouldBeLinkedToCliente() {

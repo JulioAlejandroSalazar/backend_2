@@ -1,9 +1,6 @@
-package com.letrasypapeles.backend;
+package com.letrasypapeles.backend.entity;
 
 import org.junit.jupiter.api.Test;
-import com.letrasypapeles.backend.entity.Producto;
-import com.letrasypapeles.backend.entity.Proveedor;
-import com.letrasypapeles.backend.entity.Reserva;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ProveedorTest {

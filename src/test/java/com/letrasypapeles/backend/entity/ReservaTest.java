@@ -1,12 +1,9 @@
-package com.letrasypapeles.backend;
+package com.letrasypapeles.backend.entity;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
-import com.letrasypapeles.backend.entity.Cliente;
-import com.letrasypapeles.backend.entity.Producto;
-import com.letrasypapeles.backend.entity.Reserva;
 
-public class ReservaTest {
+class ReservaTest {
 
     @Test
     void reservaShouldReferenceProductoAndCliente() {
