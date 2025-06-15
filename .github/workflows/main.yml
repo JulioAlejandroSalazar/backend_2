@@ -1,4 +1,4 @@
-name: CI  
+name: CI
 
 on:
   push:
@@ -9,18 +9,44 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: letrasypapeles_db
+          MYSQL_USER: myuser
+          MYSQL_PASSWORD: password
+          MYSQL_ROOT_PASSWORD: root
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
           cache: 'maven'
+
+      - name: Wait for MySQL to be ready
+        run: |
+          echo "Esperando a que MySQL esté listo..."
+          for i in {1..30}; do
+            nc -z localhost 3306 && echo "MySQL listo" && break
+            echo "Esperando..."
+            sleep 2
+          done
+
       - name: Make Maven wrapper executable
         run: chmod +x mvnw
-      - name: Build with Maven
-        run: ./mvnw -B verify
-      - name: Deploy
-        if: success()
-        run: echo "Deploying application..."
+
+      - name: Run tests with Maven
+        run: ./mvnw test -DtrimStackTrace=false
