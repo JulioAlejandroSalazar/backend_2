@@ -6,13 +6,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import org.springframework.http.HttpHeaders;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-
-import java.io.IOException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,45 +44,76 @@ class JWTAuthFilterTest {
     }
 
     @Test
-    void doFilterInternal_validToken_setsAuthentication() throws IOException, jakarta.servlet.ServletException {
-        String token = "valid.jwt.token";
-        String username = "usuario123";
+    void testNoAuthorizationHeader() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn(null);
 
-        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + token);
-        when(jwtService.getUsernameFromToken(token)).thenReturn(username);
-        when(userDetailsService.loadUserByUsername(username)).thenReturn(userDetails);
-        when(jwtService.isTokenValid(token, userDetails)).thenReturn(true);
+        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void testAuthorizationHeaderWithoutBearer() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("InvalidToken");
+
+        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void testTokenWithoutUsername() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Bearer validtoken");
+        when(jwtService.getUsernameFromToken("validtoken")).thenReturn(null);
+
+        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void testTokenWithExistingAuthentication() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Bearer validtoken");
+        when(jwtService.getUsernameFromToken("validtoken")).thenReturn("user");
+
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken("user", null, null)
+        );
+
+        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertEquals("user", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+    }
+
+    @Test
+    void testTokenWithInvalidJwt() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Bearer validtoken");
+        when(jwtService.getUsernameFromToken("validtoken")).thenReturn("user");
+        when(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails);
+        when(jwtService.isTokenValid("validtoken", userDetails)).thenReturn(false);
+
+        jwtAuthFilter.doFilterInternal(request, response, filterChain);
+
+        verify(filterChain).doFilter(request, response);
+        assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    @Test
+    void testTokenWithValidJwt() throws Exception {
+        when(request.getHeader("Authorization")).thenReturn("Bearer validtoken");
+        when(jwtService.getUsernameFromToken("validtoken")).thenReturn("user");
+        when(userDetailsService.loadUserByUsername("user")).thenReturn(userDetails);
+        when(jwtService.isTokenValid("validtoken", userDetails)).thenReturn(true);
         when(userDetails.getAuthorities()).thenReturn(null);
 
         jwtAuthFilter.doFilterInternal(request, response, filterChain);
 
+        verify(filterChain).doFilter(request, response);
         assertNotNull(SecurityContextHolder.getContext().getAuthentication());
-        assertTrue(SecurityContextHolder.getContext().getAuthentication() instanceof UsernamePasswordAuthenticationToken);
-        verify(filterChain, times(1)).doFilter(request, response);
-    }
-
-    @Test
-    void doFilterInternal_missingToken_doesNotAuthenticate() throws IOException, jakarta.servlet.ServletException {
-        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn(null);
-
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
-
-        assertNull(SecurityContextHolder.getContext().getAuthentication());
-        verify(filterChain, times(1)).doFilter(request, response);
-    }
-
-    @Test
-    void doFilterInternal_invalidToken_doesNotAuthenticate() throws IOException, jakarta.servlet.ServletException {
-        String token = "invalid.jwt.token";
-
-        when(request.getHeader(HttpHeaders.AUTHORIZATION)).thenReturn("Bearer " + token);
-        when(jwtService.getUsernameFromToken(token)).thenReturn("usuario123");
-        when(userDetailsService.loadUserByUsername("usuario123")).thenReturn(userDetails);
-        when(jwtService.isTokenValid(token, userDetails)).thenReturn(false);
-
-        jwtAuthFilter.doFilterInternal(request, response, filterChain);
-
-        assertNull(SecurityContextHolder.getContext().getAuthentication());
-        verify(filterChain, times(1)).doFilter(request, response);
+        assertEquals(userDetails, SecurityContextHolder.getContext().getAuthentication().getPrincipal());
     }
 }

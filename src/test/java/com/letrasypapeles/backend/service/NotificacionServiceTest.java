@@ -5,9 +5,8 @@ import com.letrasypapeles.backend.repository.NotificacionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -25,52 +24,73 @@ class NotificacionServiceTest {
     }
 
     @Test
-    void testGuardarNotificacion() {
-        Notificacion noti = new Notificacion();
-        noti.setMensaje("Pedido despachado");
-
-        when(notificacionRepository.save(any(Notificacion.class))).thenReturn(noti);
-
-        Notificacion result = notificacionService.guardar(noti);
-
-        assertNotNull(result);
-        assertEquals("Pedido despachado", result.getMensaje());
-        verify(notificacionRepository).save(noti);
-    }
-
-    @Test
-    void testBuscarPorId() {
-        Notificacion noti = new Notificacion();
-        noti.setId(3L);
-
-        when(notificacionRepository.findById(3L)).thenReturn(Optional.of(noti));
-
-        Optional<Notificacion> result = notificacionService.obtenerPorId(3L);
-
-        assertTrue(result.isPresent());
-        assertEquals(3L, result.get().getId());
-        verify(notificacionRepository).findById(3L);
-    }
-
-    @Test
     void testObtenerTodas() {
-        Notificacion n1 = new Notificacion();
-        Notificacion n2 = new Notificacion();
+        List<Notificacion> lista = Arrays.asList(new Notificacion(), new Notificacion());
+        when(notificacionRepository.findAll()).thenReturn(lista);
 
-        when(notificacionRepository.findAll()).thenReturn(Arrays.asList(n1, n2));
+        List<Notificacion> resultado = notificacionService.obtenerTodas();
 
-        List<Notificacion> notificaciones = notificacionService.obtenerTodas();
-
-        assertEquals(2, notificaciones.size());
-        verify(notificacionRepository).findAll();
+        assertEquals(2, resultado.size());
+        verify(notificacionRepository, times(1)).findAll();
     }
 
     @Test
-    void testEliminarNotificacion() {
-        Long id = 6L;
+    void testObtenerPorId_Encontrado() {
+        Notificacion n = new Notificacion();
+        n.setId(1L);
+        when(notificacionRepository.findById(1L)).thenReturn(Optional.of(n));
+
+        Optional<Notificacion> resultado = notificacionService.obtenerPorId(1L);
+
+        assertTrue(resultado.isPresent());
+        assertEquals(1L, resultado.get().getId());
+        verify(notificacionRepository).findById(1L);
+    }
+
+    @Test
+    void testGuardar() {
+        Notificacion n = new Notificacion();
+        n.setMensaje("Mensaje de prueba");
+        when(notificacionRepository.save(n)).thenReturn(n);
+
+        Notificacion resultado = notificacionService.guardar(n);
+
+        assertEquals("Mensaje de prueba", resultado.getMensaje());
+        verify(notificacionRepository).save(n);
+    }
+
+    @Test
+    void testEliminar() {
+        Long id = 1L;
+        doNothing().when(notificacionRepository).deleteById(id);
 
         notificacionService.eliminar(id);
 
         verify(notificacionRepository).deleteById(id);
+    }
+
+    @Test
+    void testObtenerPorClienteId() {
+        Long clienteId = 42L;
+        List<Notificacion> lista = Arrays.asList(new Notificacion(), new Notificacion());
+        when(notificacionRepository.findByClienteId(clienteId)).thenReturn(lista);
+
+        List<Notificacion> resultado = notificacionService.obtenerPorClienteId(clienteId);
+
+        assertEquals(2, resultado.size());
+        verify(notificacionRepository).findByClienteId(clienteId);
+    }
+
+    @Test
+    void testObtenerPorFechaEntre() {
+        LocalDateTime inicio = LocalDateTime.now().minusDays(1);
+        LocalDateTime fin = LocalDateTime.now();
+        List<Notificacion> lista = Arrays.asList(new Notificacion());
+        when(notificacionRepository.findByFechaBetween(inicio, fin)).thenReturn(lista);
+
+        List<Notificacion> resultado = notificacionService.obtenerPorFechaEntre(inicio, fin);
+
+        assertEquals(1, resultado.size());
+        verify(notificacionRepository).findByFechaBetween(inicio, fin);
     }
 }

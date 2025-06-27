@@ -36,7 +36,7 @@ public class JwtService {
                 .compact();
     }
 
-    private Key getKey() {
+    protected Key getKey() {
         byte[] keyBytes=Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
@@ -50,7 +50,7 @@ public class JwtService {
         return (username.equals(userDetails.getUsername())&& !isTokenExpired(token));
     }
 
-    private Claims getAllClaims(String token)
+    protected Claims getAllClaims(String token)
     {
         return Jwts
                 .parserBuilder()
@@ -71,9 +71,12 @@ public class JwtService {
         return getClaim(token, Claims::getExpiration);
     }
 
-    private boolean isTokenExpired(String token)
-    {
-        return getExpiration(token).before(new Date());
+    protected boolean isTokenExpired(String token) {
+        try {
+            return getExpiration(token).before(new Date());
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            return true;
+        }
     }
-
+    
 }
