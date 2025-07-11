@@ -3,9 +3,15 @@ package com.letrasypapeles.backend.controller;
 import com.letrasypapeles.backend.entity.Cliente;
 import com.letrasypapeles.backend.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.CollectionModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 @RequestMapping("/api/clientes")
@@ -15,36 +21,53 @@ public class ClienteController {
     private ClienteService clienteService;
 
     @GetMapping
-    public ResponseEntity<List<Cliente>> obtenerTodos() {
-        List<Cliente> clientes = clienteService.obtenerTodos();
-        return ResponseEntity.ok(clientes);
+    public ResponseEntity<CollectionModel<EntityModel<Cliente>>> obtenerTodos() {
+        List<EntityModel<Cliente>> clientes = clienteService.obtenerTodos().stream()
+                .map(cliente -> {
+                    cliente.setContraseña(null);
+                    return EntityModel.of(cliente,
+                            linkTo(methodOn(ClienteController.class).obtenerPorId(cliente.getId())).withSelfRel());
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(CollectionModel.of(clientes,
+                linkTo(methodOn(ClienteController.class).obtenerTodos()).withSelfRel()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Cliente> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<EntityModel<Cliente>> obtenerPorId(@PathVariable Long id) {
         return clienteService.obtenerPorId(id)
                 .map(cliente -> {
-                    cliente.setContraseña(null); // No exponer la contraseña
-                    return ResponseEntity.ok(cliente);
+                    cliente.setContraseña(null);
+                    return EntityModel.of(cliente,
+                            linkTo(methodOn(ClienteController.class).obtenerPorId(id)).withSelfRel(),
+                            linkTo(methodOn(ClienteController.class).obtenerTodos()).withRel("todos"),
+                            linkTo(methodOn(ClienteController.class).eliminarCliente(id)).withRel("eliminar"),
+                            linkTo(methodOn(ClienteController.class).actualizarCliente(id, cliente)).withRel("actualizar"));
                 })
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/registro")
-    public ResponseEntity<Cliente> registrarCliente(@RequestBody Cliente cliente) {
-        Cliente nuevoCliente = clienteService.registrarCliente(cliente);
-        nuevoCliente.setContraseña(null); // No exponer la contraseña
-        return ResponseEntity.ok(nuevoCliente);
+    public ResponseEntity<EntityModel<Cliente>> registrarCliente(@RequestBody Cliente cliente) {
+        Cliente nuevo = clienteService.registrarCliente(cliente);
+        nuevo.setContraseña(null);
+        return ResponseEntity.ok(EntityModel.of(nuevo,
+                linkTo(methodOn(ClienteController.class).obtenerPorId(nuevo.getId())).withSelfRel(),
+                linkTo(methodOn(ClienteController.class).obtenerTodos()).withRel("todos")));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Cliente> actualizarCliente(@PathVariable Long id, @RequestBody Cliente cliente) {
+    public ResponseEntity<EntityModel<Cliente>> actualizarCliente(@PathVariable Long id, @RequestBody Cliente cliente) {
         return clienteService.obtenerPorId(id)
                 .map(c -> {
                     cliente.setId(id);
-                    Cliente clienteActualizado = clienteService.actualizarCliente(cliente);
-                    clienteActualizado.setContraseña(null);
-                    return ResponseEntity.ok(clienteActualizado);
+                    Cliente actualizado = clienteService.actualizarCliente(cliente);
+                    actualizado.setContraseña(null);
+                    return ResponseEntity.ok(EntityModel.of(actualizado,
+                            linkTo(methodOn(ClienteController.class).obtenerPorId(id)).withSelfRel(),
+                            linkTo(methodOn(ClienteController.class).obtenerTodos()).withRel("todos")));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
