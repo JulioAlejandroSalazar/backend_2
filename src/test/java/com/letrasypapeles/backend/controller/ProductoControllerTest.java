@@ -50,8 +50,9 @@ class ProductoControllerTest {
         Mockito.when(productoService.obtenerTodos()).thenReturn(Arrays.asList(crearProductoMock()));
 
         mockMvc.perform(get("/api/productos"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].nombre").value("Notebook"));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$._embedded.productoList[0].nombre").value("Notebook"));
+
     }
 
     @Test

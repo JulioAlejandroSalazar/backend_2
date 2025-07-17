@@ -59,10 +59,11 @@ class ClienteControllerTest {
         Mockito.when(clienteService.obtenerTodos()).thenReturn(Arrays.asList(cliente1, cliente2));
 
         mockMvc.perform(get("/api/clientes"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].nombre", is("Juan")))
-                .andExpect(jsonPath("$[1].nombre", is("Maria")));
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$._embedded.clienteList", hasSize(2)))
+        .andExpect(jsonPath("$._embedded.clienteList[0].nombre", is("Juan")))
+        .andExpect(jsonPath("$._embedded.clienteList[1].nombre", is("Maria")));
+
     }
 
     @Test

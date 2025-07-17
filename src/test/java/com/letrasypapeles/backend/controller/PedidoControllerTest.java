@@ -52,10 +52,10 @@ class PedidoControllerTest {
         Mockito.when(pedidoService.obtenerTodos()).thenReturn(Arrays.asList(pedido1, pedido2));
 
         mockMvc.perform(get("/api/pedidos"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].id", is(1)))
-                .andExpect(jsonPath("$[1].id", is(2)));
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$._embedded.pedidoList", hasSize(2)))
+            .andExpect(jsonPath("$._embedded.pedidoList[0].id", is(1)))
+            .andExpect(jsonPath("$._embedded.pedidoList[1].id", is(2)));
     }
 
     @Test
@@ -83,8 +83,8 @@ class PedidoControllerTest {
 
         mockMvc.perform(get("/api/pedidos/cliente/5"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)));
+                .andExpect(jsonPath("$._embedded.pedidoList", hasSize(1)))
+                .andExpect(jsonPath("$._embedded.pedidoList[0].id", is(1)));
     }
 
     @Test
